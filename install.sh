@@ -89,5 +89,18 @@ else
     mv "$tmp_file" "$INSTALL_DIR/$BINARY_NAME"
 fi
 
+echo "Verifying installed binary..."
+if ! "$INSTALL_DIR/$BINARY_NAME" --version >/dev/null 2>&1; then
+    echo "Error: Installed binary exists but could not be executed."
+    echo "Path: $INSTALL_DIR/$BINARY_NAME"
+    if [ -f /etc/alpine-release ]; then
+        echo "Detected Alpine Linux (musl). This usually means a glibc-linked binary."
+        echo "Try installing compatibility libraries and run the installer again:"
+        echo "  apk add --no-cache libc6-compat"
+    fi
+    echo "You can inspect linkage with: file $INSTALL_DIR/$BINARY_NAME"
+    exit 1
+fi
+
 echo "=== Installation Complete! ==="
 echo "You can now run 'olLANma config' to set up your LAN instance."

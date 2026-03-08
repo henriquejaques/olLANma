@@ -54,6 +54,17 @@ jobs:
             -ldflags "-s -w -X main.Version=${{ steps.version.outputs.VERSION }}" \
             -o dist/olLANma-linux-armv7 .
 
+      - name: Verify binaries are static
+        run: |
+          for bin in dist/olLANma-linux-*; do
+            info="$(file "$bin")"
+            echo "$info"
+            if echo "$info" | grep -q "dynamically linked"; then
+              echo "Error: $bin is dynamically linked. Refusing to release."
+              exit 1
+            fi
+          done
+
       - name: Generate checksums
         run: |
           cd dist
