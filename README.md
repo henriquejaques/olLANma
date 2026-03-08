@@ -28,6 +28,7 @@ Not every machine on your network can (or should) run a large language model. Ma
 
 ## Table of Contents
 
+- [Value Proposition](#value-proposition)
 - [Features](#features)
 - [Quick Start](#quick-start)
 - [Installation](#installation)
@@ -38,6 +39,48 @@ Not every machine on your network can (or should) run a large language model. Ma
 - [Architecture](#architecture)
 - [Contributing](#contributing)
 - [License](#license)
+
+---
+
+## Value Proposition
+
+`olLANma` is built for people who want a **terminal-first**, **low-ops**, and **safer-by-default** way to use a shared Ollama server on a local network.
+
+Looking for audience-specific examples? Jump to [For Technical Teams](#for-technical-teams) or [For Non-Technical Users](#for-non-technical-users).
+
+### For Technical Teams
+
+- **Infra/Platform teams** exposing one internal Ollama node to multiple developer workstations without shipping custom curl scripts.
+- **SRE/DevOps workflows** that need model operations (`list`, `pull`, `ps`, `rm`) from SSH sessions and automation scripts.
+- **Security-conscious engineering orgs** that want CLI access with built-in LAN target restrictions and safer defaults.
+
+### For Non-Technical Users
+
+- **Writers/researchers on lightweight laptops** who need local AI speed from a shared office/home server without learning APIs.
+- **Small business teams** that want a private, local AI assistant in terminal workflows with a guided setup and minimal maintenance.
+- **Educators/students in labs** where one configured server can support many client machines quickly.
+
+### Real Problems It Solves
+
+| Problem | How olLANma helps |
+| --- | --- |
+| **You want remote Ollama to feel local in terminal** | Keeps a CLI-native workflow with fast defaults: `olLANma "prompt"` just works without hand-crafting JSON requests. |
+| **You need to use LLMs over SSH/headless systems** | Single binary, no web app stack, no browser session needed. Works cleanly in tmux, remote shells, and low-resource machines. |
+| **You want safer defaults on a LAN** | Enforces host/scheme/port validation, private-network target restrictions, redirect blocking, and a command whitelist. |
+| **You need quick onboarding for non-API users** | First-run wizard + model auto-discovery + stored defaults reduce setup friction to minutes. |
+| **You need shell automation around local inference** | Script-friendly CLI behavior with predictable commands, timeouts, and graceful cancellation for CI/jobs/scripts. |
+
+### Why Not Just Direct API or OpenWebUI?
+
+| If your priority is... | Direct Ollama API | OpenWebUI | olLANma |
+| --- | --- | --- | --- |
+| **Raw flexibility at HTTP level** | Best fit | Not primary focus | Uses API under the hood, but intentionally constrained |
+| **Rich graphical multi-user chat interface** | Not ideal | Best fit | Not the goal |
+| **Fast terminal workflows and scripting** | Possible, but more boilerplate | Not terminal-native | Best fit |
+| **Minimal deployment/ops overhead** | Moderate (you own request tooling) | Higher (web app to run/maintain) | Low (single binary) |
+| **Secure-by-default CLI bridge to LAN Ollama** | DIY guardrails | Different web-app threat model | Core design goal |
+
+In short: **use OpenWebUI for collaborative browser UX, use raw API for full protocol control, and use olLANma when you want remote Ollama with local CLI ergonomics and built-in safety defaults.**
 
 ---
 
@@ -93,6 +136,16 @@ sudo mv olLANma /usr/local/bin/
 
 ```bash
 go install github.com/henriquejaques/olLANma@latest
+```
+
+### Troubleshooting (Alpine Linux)
+
+If `olLANma` autocompletes but running it returns `sh: olLANma: not found`, the file is installed but your system can't load its runtime linker.
+
+On Alpine, install glibc compatibility and retry:
+
+```bash
+apk add --no-cache libc6-compat
 ```
 
 ---
