@@ -1,0 +1,41 @@
+# Dockerfile.test — End-to-end test for install.sh
+#
+# Simulates a first-time user installing olLANma via the install script.
+# Since install.sh downloads from GitHub Releases (which may not exist yet),
+# we build the binary locally and serve it via a lightweight HTTP server,
+# then point install.sh at it.
+#
+# Usage:
+#   docker build -f Dockerfile.test -t ollanma-install-test .
+#   docker run --rm ollanma-install-test
+
+# ──────────── Stage 1: Build the binary ────────────
+FROM golang:1.25.8-alpine AS builder
+
+WORKDIR /src
+COPY go.mod ./
+COPY main.go ./
+COPY internal/ ./internal/
+
+RUN CGO_ENABLED=0 go build -ldflags "-s -w -X main.Version=install-test" -o olLANma .
+
+# ──────────── Stage 2: Test the install script ────────────
+FROM alpine:3.21
+
+RUN apk add --no-cache curl python3 coreutils sudo
+
+# Create a non-root test user (simulates a real user)
+RUN adduser -D testuser && echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+WORKDIR /test
+
+# Copy the built binary and install script
+COPY --from=builder /src/olLANma ./mock-release/olLANma-linux-amd64
+COPY install.sh ./install.sh.orig
+COPY test_install.sh ./test_install.sh
+
+# Generate checksums (just like the release pipeline does)
+RUN cd mock-release && sha256sum olLANma-* > checksums.txt && cat checksums.txt
+RUN chmod +x /test/test_install.sh
+
+CMD ["/test/test_install.sh"]
